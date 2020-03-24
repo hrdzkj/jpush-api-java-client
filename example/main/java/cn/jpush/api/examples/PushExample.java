@@ -31,8 +31,8 @@ public class PushExample {
     protected static final Logger LOG = LoggerFactory.getLogger(PushExample.class);
 
     // demo App defined in resources/jpush-api.conf 
-    protected static final String APP_KEY = "e4ceeaf7a53ad745dd4728f2";
-    protected static final String MASTER_SECRET = "1582b986adeaf48ceec1e354";
+    protected static final String APP_KEY = "c87916f5bf123a4a24d84980";
+    protected static final String MASTER_SECRET = "e26639fe61552c6ef625c1fb";
     protected static final String GROUP_PUSH_KEY = "2c88a01e073a0fe4fc7b167c";
     protected static final String GROUP_MASTER_SECRET = "b11314807507e2bcfdeebe2e";
 
@@ -46,16 +46,17 @@ public class PushExample {
 
     public static void main(String[] args) {
 
+    	liuyTestSendPushes();
         // 回调参数可参考下面方法
-        testSendPushWithCustom();
-        testSendPushWithCustomField();
+ //       testSendPushWithCustom();
+  //      testSendPushWithCustomField();
 //        testBatchSend();
-        testSendPushWithCustomConfig();
+ //       testSendPushWithCustomConfig();
 //        testSendIosAlert();
 //		testSendPush();
 //        testGetCidList();
 //        testSendPushes();
-        testSendPush_fromJSON();
+  //      testSendPush_fromJSON();
 //        testSendPushWithCallback();
 //		testSendPushWithCid();
     }
@@ -179,6 +180,37 @@ public class PushExample {
         }
     }
 
+    
+	public static void liuyTestSendPushes() {
+		ClientConfig clientConfig = ClientConfig.getInstance();
+		final JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null, clientConfig);
+		String authCode = ServiceHelper.getBasicAuthorization(APP_KEY, MASTER_SECRET);
+		// Here you can use NativeHttpClient or NettyHttpClient or ApacheHttpClient.
+		NativeHttpClient httpClient = new NativeHttpClient(authCode, null, clientConfig);
+		// Call setHttpClient to set httpClient,
+		// If you don't invoke this method, default httpClient will use
+		// NativeHttpClient.
+		// ApacheHttpClient httpClient = new ApacheHttpClient(authCode, null,
+		// clientConfig);
+		jpushClient.getPushClient().setHttpClient(httpClient);
+		final PushPayload payload = buildPushObject_ios_tagAnd_alertWithExtrasAndMessage();
+		try {
+			PushResult result = jpushClient.sendPush(payload);
+			LOG.info("Got result - " + result);
+
+		} catch (APIConnectionException e) {
+			LOG.error("Connection error. Should retry later. ", e);
+			LOG.error("Sendno: " + payload.getSendno());
+
+		} catch (APIRequestException e) {
+			LOG.error("Error response from JPush server. Should review and fix it. ", e);
+			LOG.info("HTTP Status: " + e.getStatus());
+			LOG.info("Error Code: " + e.getErrorCode());
+			LOG.info("Error Message: " + e.getErrorMessage());
+			LOG.info("Msg ID: " + e.getMsgId());
+			LOG.error("Sendno: " + payload.getSendno());
+		}
+	}
     /**
      * 测试多线程发送 2000 条推送耗时
      */
@@ -328,14 +360,17 @@ public class PushExample {
         sound.add("volume", new JsonPrimitive(0.2));
         return PushPayload.newBuilder()
                 .setPlatform(Platform.ios())
-                .setAudience(Audience.tag_and("tag1", "tag_all"))
+                //.setAudience(Audience.tag_and("tag1", "tag_all"))
+                .setAudience(Audience.alias("382768")) //测试2
                 .setNotification(Notification.newBuilder()
                         .addPlatformNotification(IosNotification.newBuilder()
                                 .setAlert(ALERT)
-                                .setBadge(5)
+                                .setBadge(10)
+                                
                                 .setMutableContent(false)
-//                                .setSound("happy")
-                                .setSound(sound)
+                                //.setSound("happy")
+ //                               .setSound(sound)
+                                .setSound("sound.caf")
                                 .addExtra("from", "JPush")
                                 .build())
                         .build())
